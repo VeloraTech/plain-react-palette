@@ -11,9 +11,9 @@ const Index = () => {
       <Header />
       
       <div className="flex">
-        <Sidebar />
+        <Sidebar className="hidden lg:flex" />
         
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 lg:p-8">
           <WelcomeSection />
           
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

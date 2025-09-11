@@ -1,11 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { FaGraduationCap, FaHome, FaStickyNote, FaUsers, FaCheck, FaCalendar, FaSearch, FaBars } from "react-icons/fa";
+import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { FaGraduationCap, FaHome, FaStickyNote, FaUsers, FaCheck, FaCalendar, FaSearch, FaBars, FaTimes } from "react-icons/fa";
 
 interface SidebarProps {
   className?: string;
 }
 
 const Sidebar = ({ className }: SidebarProps) => {
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const navigation = [
+    { name: "Home", path: "/", icon: FaHome },
+    { name: "Memos", path: "/memos", icon: FaStickyNote },
+    { name: "Students", path: "/students", icon: FaUsers },
+    { name: "Approvals", path: "/approvals", icon: FaCheck },
+    { name: "Schedule", path: "/schedule", icon: FaCalendar },
+  ];
+
   const currentDate = new Date();
   const currentMonth = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
   
@@ -31,49 +44,53 @@ const Sidebar = ({ className }: SidebarProps) => {
   const calendarDays = generateCalendarDays();
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  return (
-    <aside className={`bg-sidebar text-sidebar-foreground w-80 flex flex-col ${className}`}>
-      <div className="p-6 border-b border-sidebar-accent">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-2">
-            <FaGraduationCap className="h-6 w-6" />
-            <span className="text-lg font-bold">STUDENT PORTAL</span>
-          </div>
+  const SidebarContent = () => (
+    <>
+      <div className="p-4 sm:p-6 border-b border-sidebar-accent">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <Link to="/" className="flex items-center space-x-2">
+            <FaGraduationCap className="h-5 w-5 sm:h-6 sm:w-6" />
+            <span className="text-base sm:text-lg font-bold">STUDENT PORTAL</span>
+          </Link>
           <div className="flex space-x-2">
-            <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent">
+            <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent hidden sm:flex">
               <FaSearch className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent">
-              <FaBars className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-sidebar-foreground hover:bg-sidebar-accent lg:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <FaTimes className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
         <nav className="space-y-2">
-          <Button variant="sidebar" className="w-full bg-sidebar-accent">
-            <FaHome className="mr-3 h-4 w-4" />
-            Home
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground">
-            <FaStickyNote className="mr-3 h-4 w-4" />
-            Memos
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground">
-            <FaUsers className="mr-3 h-4 w-4" />
-            Students
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground">
-            <FaCheck className="mr-3 h-4 w-4" />
-            Approvals
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground">
-            <FaCalendar className="mr-3 h-4 w-4" />
-            Schedule
-          </Button>
+          {navigation.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <Link key={item.name} to={item.path} onClick={() => setIsMobileMenuOpen(false)}>
+                <Button 
+                  variant={isActive ? "sidebar" : "ghost"} 
+                  className={`w-full justify-start ${
+                    isActive ? 
+                      "bg-sidebar-accent text-sidebar-accent-foreground" : 
+                      "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <IconComponent className="mr-3 h-4 w-4" />
+                  {item.name}
+                </Button>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
-      <div className="p-6 border-b border-sidebar-accent">
+      <div className="p-4 sm:p-6 border-b border-sidebar-accent">
         <h3 className="text-sm font-semibold mb-4">Quick Actions</h3>
         <div className="space-y-2">
           <Button variant="success" size="sm" className="w-full">
@@ -88,7 +105,7 @@ const Sidebar = ({ className }: SidebarProps) => {
         </div>
       </div>
 
-      <div className="p-6 flex-1">
+      <div className="p-4 sm:p-6 flex-1 overflow-auto">
         <h3 className="text-sm font-semibold mb-4">Schedule</h3>
         
         <div className="mb-4">
@@ -141,7 +158,36 @@ const Sidebar = ({ className }: SidebarProps) => {
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className={`bg-sidebar text-sidebar-foreground w-80 flex-col ${className || ''}`}>
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 z-50 lg:hidden bg-sidebar text-sidebar-foreground"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        <FaBars className="h-4 w-4" />
+      </Button>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
+          <aside className="relative bg-sidebar text-sidebar-foreground w-80 h-full flex flex-col">
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+    </>
   );
 };
 
